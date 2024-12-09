@@ -1,3 +1,36 @@
+/* 
+ * This file is part of orbit_count, a python module providing bindings for orca. 
+ *
+ * The original file was licensed under the GNU General Public License v3 (GPLv3).
+ * No specific copyright holder was identified in the original source.
+ * Modified by Max-Planck-Institute for Biochemistry, MLSB on December 9 2024.
+ *
+ * This file is licensed under the terms of the GNU General Public License v3. 
+ * You can redistribute it and/or modify it under the terms of the GPLv3.
+ *
+ * This file is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details.
+ *
+ * A copy of the GNU General Public License is available at 
+ * <https://www.gnu.org/licenses/>.
+ *
+ *
+ * 
+ * The code was adopted from https://github.com/thocevar/orca/blob/e146a8b1a99a90f5e3096b7bcc2ab0ea246c3ca7/orca.cpp
+ *
+ * Changes:
+ * 	- Removed main function, init function
+ * 	- Removed data input/output via files
+ * 	- Added functions:
+ * 		- motif_counts
+ *		- python_motif_counts
+ *		- generate_node_orbit_matrix
+ *		- generate_edge_orbit_matrix
+ *	- Added pybind11 module
+*/
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -92,10 +125,6 @@ int64 **eorbit; // eorbit[x][o] - how many times does node x participate in edge
 
 /** count graphlets on max 4 nodes */
 void count4() {
-	clock_t startTime, endTime;
-	startTime = clock();
-	clock_t startTime_all, endTime_all;
-	startTime_all = startTime;
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -113,8 +142,6 @@ void count4() {
 			else { yi++; }
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// count full graphlets
 	int64 *C4 = (int64*)calloc(n,sizeof(int64));
@@ -146,8 +173,6 @@ void count4() {
 			}
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// set up a system of equations relating orbits for every node
 	int *common = (int*)calloc(n,sizeof(int));
@@ -226,19 +251,11 @@ void count4() {
 		orbit[x][5]=(2*f_12_14+f_5_8-f_8_12-6*f_14);
 		orbit[x][4]=(2*f_12_14+f_4_8-f_8_12-6*f_14);
 	}
-
-	endTime = clock();
-
-	endTime_all = endTime;
 }
 
 
 /** count edge orbits of graphlets on max 4 nodes */
 void ecount4() {
-	clock_t startTime, endTime;
-	startTime = clock();
-	clock_t startTime_all, endTime_all;
-	startTime_all = startTime;
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -256,8 +273,6 @@ void ecount4() {
 			else { yi++; }
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// count full graphlets
 	int64 *C4 = (int64*)calloc(m,sizeof(int64));
@@ -308,8 +323,6 @@ void ecount4() {
 			neighx[y]=-1;
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// count full graphlets for the smallest edge
 	for (int x=0;x<n;x++) {
@@ -338,8 +351,6 @@ void ecount4() {
 			}
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// set up a system of equations relating orbits for every node
 	int *common = (int*)calloc(n,sizeof(int));
@@ -408,19 +419,11 @@ void ecount4() {
 		eorbit[e][3]=(eorbit[e][3]-2*eorbit[e][5]-eorbit[e][8]-eorbit[e][9])/2;
 		eorbit[e][2]=(eorbit[e][2]-2*eorbit[e][5]-2*eorbit[e][6]-eorbit[e][9]);
 	}
-
-	endTime = clock();
-
-	endTime_all = endTime;
 }
 
 
 /** count graphlets on max 5 nodes */
 void count5() {
-	clock_t startTime, endTime;
-	startTime = clock();
-	clock_t startTime_all, endTime_all;
-	startTime_all = startTime;
 	int frac,frac_prev;
 
 	// precompute common nodes
@@ -456,8 +459,6 @@ void count5() {
 			else { yi++; }
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// count full graphlets
 	int64 *C5 = (int64*)calloc(n,sizeof(int64));
@@ -501,8 +502,6 @@ void count5() {
 			}
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	int *common_x = (int*)calloc(n,sizeof(int));
 	int *common_x_list = (int*)malloc(n*sizeof(int)), ncx=0;
@@ -810,18 +809,11 @@ void count5() {
 		orbit[x][16] = (f_16-1*orbit[x][59]-2*orbit[x][52]-1*orbit[x][51]-2*orbit[x][46]-2*orbit[x][36]-2*orbit[x][34]-1*orbit[x][29]);
 		orbit[x][15] = (f_15-1*orbit[x][59]-2*orbit[x][52]-1*orbit[x][51]-2*orbit[x][45]-2*orbit[x][35]-2*orbit[x][34]-2*orbit[x][27]);
 	}
-	endTime = clock();
-
-	endTime_all = endTime;
 }
 
 
 /** count edge orbits of graphlets on max 5 nodes */
 void ecount5() {
-	clock_t startTime, endTime;
-	startTime = clock();
-	clock_t startTime_all, endTime_all;
-	startTime_all = startTime;
 	int frac,frac_prev;
 
 	// precompute common nodes
@@ -857,8 +849,6 @@ void ecount5() {
 			else { yi++; }
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// count full graphlets
 	int64 *C5 = (int64*)calloc(m,sizeof(int64));
@@ -926,8 +916,6 @@ void ecount5() {
 			neighx[y]=-1;
 		}
 	}
-	endTime = clock();
-	startTime = endTime;
 
 	// set up a system of equations relating orbits for every node
 	int *common_x = (int*)calloc(n,sizeof(int));
@@ -1299,9 +1287,6 @@ void ecount5() {
 		}
 	}
 
-	endTime = clock();
-
-	endTime_all = endTime;
 }
 
 
@@ -1337,13 +1322,15 @@ std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
 }
 
 std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
+	common2.clear();
+    common3.clear();
 	n = num_nodes;
 	m = edge_index.size();
 	int d_max=0;
 	edges = (PAIR*)malloc(m*sizeof(PAIR));
 	deg = (int*)calloc(n,sizeof(int)); 
 
-	for (int i=0;i<edge_index.size();i++) {
+	for (int i=0;i<m;i++) {
 		int a,b;
 		a = edge_index[i].first;
 		b = edge_index[i].second;
@@ -1408,9 +1395,19 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 		if (graphlet_size==5) ecount5();
 		return generate_edge_orbit_matrix(graphlet_size);
 	}
+
+	free(edges);
+	free(deg);
+	for (int i=0;i<n;i++) free(orbit[i]);
+	free(orbit);
+	for (int i=0;i<m;i++) free(eorbit[i]);
+	free(eorbit);
+	free(d);
+	for (int i=0;i<n;i++) free(inc[i]);
+	free(inc);
+	for (int i=0;i<n;i++) free(adj[i]);
+	free(adj);
 }
-
-
 
 namespace py = pybind11;
 
