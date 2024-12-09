@@ -1309,47 +1309,44 @@ string orbit_type;
 
 
 std::vector<std::vector<int>> generate_node_orbit_matrix(int g) {
-    int no[] = {0,0,1,4,15,73};
-    std::vector<std::vector<int>> result;
+	int no[] = {0,0,1,4,15,73};
+	std::vector<std::vector<int>> result;
 
-    for (int i=0;i<n;i++) {
-        std::vector<int> row;
-        result.push_back(row);
-        for (int j=0;j<no[g];j++) {
-            result[i].push_back(orbit[i][j]);
-        }
-    }
-    return result;
+	for (int i=0;i<n;i++) {
+		std::vector<int> row;
+		result.push_back(row);
+		for (int j=0;j<no[g];j++) {
+			result[i].push_back(orbit[i][j]);
+		}
+	}
+	return result;
 }
 
 std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
-    int no[] = {0,0,0,2,12,68};
-    std::vector<std::vector<int>> result;
+	int no[] = {0,0,0,2,12,68};
+	std::vector<std::vector<int>> result;
 
-    for (int i=0;i<m;i++) {
-        std::vector<int> row;
-        result.push_back(row);
-        for (int j=0;j<no[g];j++) {
-            result[i].push_back(eorbit[i][j]);
-        }
-    }
-    return result;
+	for (int i=0;i<m;i++) {
+		std::vector<int> row;
+		result.push_back(row);
+		for (int j=0;j<no[g];j++) {
+			result[i].push_back(eorbit[i][j]);
+		}
+	}
+	return result;
 }
 
-std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, 
-        int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
-        
-    n = num_nodes;
-    m = edge_index.size();
-    int d_max=0;
+std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
+	n = num_nodes;
+	m = edge_index.size();
+	int d_max=0;
 	edges = (PAIR*)malloc(m*sizeof(PAIR));
-	deg = (int*)calloc(n,sizeof(int));
-     
+	deg = (int*)calloc(n,sizeof(int)); 
 
-    for (int i=0;i<edge_index.size();i++) {
+	for (int i=0;i<edge_index.size();i++) {
 		int a,b;
 		a = edge_index[i].first;
-        b = edge_index[i].second;
+		b = edge_index[i].second;
 		if (!(0<=a && a<n) || !(0<=b && b<n)) {
 			throw std::invalid_argument("Node ids should be between 0 and n-1.");
 		}
@@ -1402,15 +1399,15 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 	eorbit = (int64**)malloc(m*sizeof(int64*));
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
-    if (strcmp(orbit_type,"node") == 0) {
-        if (graphlet_size==4) count4();
-        if (graphlet_size==5) count5();
-        return generate_node_orbit_matrix(graphlet_size);
-    } else {
-        if (graphlet_size==4) ecount4();
-        if (graphlet_size==5) ecount5();
-        return generate_edge_orbit_matrix(graphlet_size);
-    }
+	if (strcmp(orbit_type,"node") == 0) {
+		if (graphlet_size==4) count4();
+		if (graphlet_size==5) count5();
+		return generate_node_orbit_matrix(graphlet_size);
+	} else {
+		if (graphlet_size==4) ecount4();
+		if (graphlet_size==5) ecount5();
+		return generate_edge_orbit_matrix(graphlet_size);
+	}
 }
 
 
@@ -1419,55 +1416,55 @@ namespace py = pybind11;
 
 
 py::array_t<int> python_motif_counts(
-    const std::string& orbit_type, 
-    int graphlet_size, 
-    int num_nodes,
-    py::array_t<int> edge_index_array
+	const std::string& orbit_type, 
+	int graphlet_size, 
+	int num_nodes,
+	py::array_t<int> edge_index_array
 ) {
-    // Validate input NumPy array
-    auto buf = edge_index_array.request();
-    if (buf.ndim != 2 || buf.shape[1] != 2) {
-        throw std::runtime_error("Edge index must be a 2D array with 2 columns");
-    }
+	// Validate input NumPy array
+	auto buf = edge_index_array.request();
+	if (buf.ndim != 2 || buf.shape[1] != 2) {
+		throw std::runtime_error("Edge index must be a 2D array with 2 columns");
+	}
 
-    // Convert NumPy array to vector of pairs
-    std::vector<std::pair<int, int>> edge_index;
-    int* ptr = static_cast<int*>(buf.ptr);
-    
-    for (ssize_t i = 0; i < buf.shape[0]; ++i) {
-        edge_index.emplace_back(
-            ptr[i * 2],      // first column
-            ptr[i * 2 + 1]   // second column
-        );
-    }
-    
-    // Call C++ function
-    auto result = motif_counts(
-        orbit_type.c_str(), 
-        graphlet_size, 
-        num_nodes, 
-        edge_index
-    );
+	// Convert NumPy array to vector of pairs
+	std::vector<std::pair<int, int>> edge_index;
+	int* ptr = static_cast<int*>(buf.ptr);
 
-    // Convert result to numpy array
-    py::array_t<int> np_result({result.size(), result[0].size()});
-    auto result_buf = np_result.request();
-    int* result_ptr = static_cast<int*>(result_buf.ptr);
+	for (ssize_t i = 0; i < buf.shape[0]; ++i) {
+		edge_index.emplace_back(
+			ptr[i * 2],      // first column
+			ptr[i * 2 + 1]   // second column
+		);
+	}
+		
+	// Call C++ function
+	auto result = motif_counts(
+		orbit_type.c_str(), 
+		graphlet_size, 
+		num_nodes, 
+		edge_index
+	);
 
-    for (size_t i = 0; i < result.size(); ++i) {
-        for (size_t j = 0; j < result[i].size(); ++j) {
-            result_ptr[i * result[i].size() + j] = result[i][j];
-        }
-    }
+	// Convert result to numpy array
+	py::array_t<int> np_result({result.size(), result[0].size()});
+	auto result_buf = np_result.request();
+	int* result_ptr = static_cast<int*>(result_buf.ptr);
 
-    return np_result;
+	for (size_t i = 0; i < result.size(); ++i) {
+		for (size_t j = 0; j < result[i].size(); ++j) {
+			result_ptr[i * result[i].size() + j] = result[i][j];
+		}
+	}
+
+	return np_result;
 }
 
 PYBIND11_MODULE(_orca, m) {
-    m.def("motif_counts", &python_motif_counts, 
-          "Compute motif counts for a graph",
-          py::arg("orbit_type"),
-          py::arg("graphlet_size"),
-          py::arg("num_nodes"),
-          py::arg("edge_index"));
+	m.def("motif_counts", &python_motif_counts, 
+			"Compute motif counts for a graph",
+			py::arg("orbit_type"),
+			py::arg("graphlet_size"),
+			py::arg("num_nodes"),
+			py::arg("edge_index"));
 }
