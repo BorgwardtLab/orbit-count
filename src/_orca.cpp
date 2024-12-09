@@ -104,7 +104,6 @@ struct hash_TRIPLE {
 
 int n,m; // n = number of nodes, m = number of edges
 int *deg; // degrees of individual nodes
-PAIR *edges; // list of edges
 
 int **adj; // adj[x] - adjacency list of node x
 PII **inc; // inc[x] - incidence list of node x: (y, edge id)
@@ -120,7 +119,7 @@ int64 **eorbit; // eorbit[x][o] - how many times does node x participate in edge
 
 
 /** count graphlets on max 4 nodes */
-void count4() {
+void count4(std::vector<PAIR> edges) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -251,7 +250,7 @@ void count4() {
 
 
 /** count edge orbits of graphlets on max 4 nodes */
-void ecount4() {
+void ecount4(std::vector<PAIR> edges) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -419,7 +418,7 @@ void ecount4() {
 
 
 /** count graphlets on max 5 nodes */
-void count5() {
+void count5(std::vector<PAIR> edges) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -813,7 +812,7 @@ void count5() {
 
 
 /** count edge orbits of graphlets on max 5 nodes */
-void ecount5() {
+void ecount5(std::vector<PAIR> edges) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -1329,7 +1328,7 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	n = num_nodes;
 	m = edge_index.size();
 	int d_max=0;
-	edges = (PAIR*)malloc(m*sizeof(PAIR));
+	std::vector<PAIR> edges;
 	deg = (int*)calloc(n,sizeof(int)); 
 
 	for (int i=0;i<m;i++) {
@@ -1344,12 +1343,12 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 			throw;
 		}
 		deg[a]++; deg[b]++;
-		edges[i]=PAIR(a,b);
+		edges.push_back(PAIR(a,b));
 	}
 
 	for (int i=0;i<n;i++) d_max=max(d_max,deg[i]);
 
-	if ((int)(set<PAIR>(edges,edges+m).size())!=m) {
+	if ((int)(set<PAIR>(edges.begin(),edges.end()).size())!=m) {
 		throw std::invalid_argument("Input file contains duplicate undirected edges.");
 	}
 	// set up adjacency matrix if it's smaller than 100MB
@@ -1388,16 +1387,15 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
 	if (orbit_type =="node") {
-		if (graphlet_size==4) count4();
-		if (graphlet_size==5) count5();
+		if (graphlet_size==4) count4(edges);
+		if (graphlet_size==5) count5(edges);
 		return generate_node_orbit_matrix(graphlet_size);
 	} else {
-		if (graphlet_size==4) ecount4();
-		if (graphlet_size==5) ecount5();
+		if (graphlet_size==4) ecount4(edges);
+		if (graphlet_size==5) ecount5(edges);
 		return generate_edge_orbit_matrix(graphlet_size);
 	}
 
-	free(edges);
 	free(deg);
 	for (int i=0;i<n;i++) free(orbit[i]);
 	free(orbit);

@@ -115,12 +115,19 @@ class CMakeBuild(build_ext):
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
-        subprocess.check_output(
-            ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp,
-        )
-        subprocess.check_output(
-            ["cmake", "--build", ".", *build_args], cwd=build_temp,
-        )
+        try:
+            out = subprocess.check_output(
+                ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp,
+            )
+            print(out)
+            out = subprocess.check_output(
+                ["cmake", "--build", ".", *build_args], cwd=build_temp,
+            )
+            print(out)
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            raise e
+        
 
 
 # The information here can also be placed in setup.cfg - better separation of
