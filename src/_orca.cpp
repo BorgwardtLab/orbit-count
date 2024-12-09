@@ -1325,7 +1325,7 @@ std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
 	return result;
 }
 
-std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
+std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
 	n = num_nodes;
 	m = edge_index.size();
 	int d_max=0;
@@ -1387,7 +1387,7 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 	eorbit = (int64**)malloc(m*sizeof(int64*));
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
-	if (strcmp(orbit_type,"node") == 0) {
+	if (orbit_type =="node") {
 		if (graphlet_size==4) count4();
 		if (graphlet_size==5) count5();
 		return generate_node_orbit_matrix(graphlet_size);
@@ -1438,7 +1438,7 @@ py::array_t<int> python_motif_counts(
 		
 	// Call C++ function
 	auto result = motif_counts(
-		orbit_type.c_str(), 
+		orbit_type, 
 		graphlet_size, 
 		num_nodes, 
 		edge_index
