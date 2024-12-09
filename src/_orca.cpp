@@ -116,7 +116,7 @@ int getEdgeId(int x, int y) { return inc[x][lower_bound(adj[x],adj[x]+deg[x],y)-
 
 
 /** count graphlets on max 4 nodes */
-void count4(std::vector<PAIR> edges, int64 **orbit) {
+void count4(const std::vector<PAIR>& edges, int64 **orbit) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -247,7 +247,7 @@ void count4(std::vector<PAIR> edges, int64 **orbit) {
 
 
 /** count edge orbits of graphlets on max 4 nodes */
-void ecount4(std::vector<PAIR> edges, int64 **eorbit) {
+void ecount4(const std::vector<PAIR>& edges, int64 **eorbit) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -415,7 +415,7 @@ void ecount4(std::vector<PAIR> edges, int64 **eorbit) {
 
 
 /** count graphlets on max 5 nodes */
-void count5(std::vector<PAIR> edges, int64 **orbit) {
+void count5(const std::vector<PAIR>& edges, int64 **orbit) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -809,7 +809,7 @@ void count5(std::vector<PAIR> edges, int64 **orbit) {
 
 
 /** count edge orbits of graphlets on max 5 nodes */
-void ecount5(std::vector<PAIR> edges, int64 **orbit, int64 **eorbit) {
+void ecount5(const std::vector<PAIR>& edges, int64 **orbit, int64 **eorbit) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
