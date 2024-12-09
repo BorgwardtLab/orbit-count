@@ -125,7 +125,8 @@ class CMakeBuild(build_ext):
             )
             print(out)
         except subprocess.CalledProcessError as e:
-            print(e.output)
+            output = e.output.decode("utf-8")
+            print(output)
             raise e
         
 
