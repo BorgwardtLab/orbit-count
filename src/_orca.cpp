@@ -98,10 +98,6 @@ struct hash_TRIPLE {
 	}
 };
 
-unordered_map<PAIR, int, hash_PAIR> common2;
-unordered_map<TRIPLE, int, hash_TRIPLE> common3;
-unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
-unordered_map<TRIPLE, int, hash_TRIPLE>::iterator common3_it;
 
 #define common3_get(x) (((common3_it=common3.find(x))!=common3.end())?(common3_it->second):0)
 #define common2_get(x) (((common2_it=common2.find(x))!=common2.end())?(common2_it->second):0)
@@ -424,6 +420,10 @@ void ecount4() {
 
 /** count graphlets on max 5 nodes */
 void count5() {
+	unordered_map<PAIR, int, hash_PAIR> common2;
+	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
+	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
+	unordered_map<TRIPLE, int, hash_TRIPLE>::iterator common3_it;
 	int frac,frac_prev;
 
 	// precompute common nodes
@@ -814,6 +814,10 @@ void count5() {
 
 /** count edge orbits of graphlets on max 5 nodes */
 void ecount5() {
+	unordered_map<PAIR, int, hash_PAIR> common2;
+	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
+	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
+	unordered_map<TRIPLE, int, hash_TRIPLE>::iterator common3_it;
 	int frac,frac_prev;
 
 	// precompute common nodes
@@ -1322,8 +1326,6 @@ std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
 }
 
 std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
-	common2.clear();
-	common3.clear();
 	n = num_nodes;
 	m = edge_index.size();
 	int d_max=0;
@@ -1344,7 +1346,6 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 		deg[a]++; deg[b]++;
 		edges[i]=PAIR(a,b);
 	}
-
 
 	for (int i=0;i<n;i++) d_max=max(d_max,deg[i]);
 
