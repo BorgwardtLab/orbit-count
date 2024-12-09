@@ -115,7 +115,7 @@ int _getEdgeId(int x, int y, PII** inc, int **adj, int *deg){
 #define common3_get(x) (((common3_it=common3.find(x))!=common3.end())?(common3_it->second):0)
 #define common2_get(x) (((common2_it=common2.find(x))!=common2.end())?(common2_it->second):0)
 
-int n,m; // n = number of nodes, m = number of edges
+int n; // n = number of nodes, m = number of edges
 int *deg; // degrees of individual nodes
 
 int **adj; // adj[x] - adjacency list of node x
@@ -126,6 +126,7 @@ int *adj_matrix; // compressed adjacency matrix
 /** count graphlets on max 4 nodes */
 void count4(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,int)) {
 	int frac,frac_prev;
+	int m = edges.size();
 
 	// precompute triangles that span over edges
 	int *tri = (int*)calloc(m,sizeof(int));
@@ -251,12 +252,19 @@ void count4(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,
 		orbit[x][5]=(2*f_12_14+f_5_8-f_8_12-6*f_14);
 		orbit[x][4]=(2*f_12_14+f_4_8-f_8_12-6*f_14);
 	}
+
+	free(tri);
+	free(C4);
+	free(neigh);
+	free(common);
+	free(common_list);
 }
 
 
 /** count edge orbits of graphlets on max 4 nodes */
 void ecount4(const std::vector<PAIR>& edges, int64 **eorbit, bool (*adjacent)(int,int)) {
 	int frac,frac_prev;
+	int m = edges.size();
 
 	// precompute triangles that span over edges
 	int *tri = (int*)calloc(m,sizeof(int));
@@ -419,6 +427,14 @@ void ecount4(const std::vector<PAIR>& edges, int64 **eorbit, bool (*adjacent)(in
 		eorbit[e][3]=(eorbit[e][3]-2*eorbit[e][5]-eorbit[e][8]-eorbit[e][9])/2;
 		eorbit[e][2]=(eorbit[e][2]-2*eorbit[e][5]-2*eorbit[e][6]-eorbit[e][9]);
 	}
+
+	free(tri);
+	free(C4);
+	free(neighx);
+	free(neigh);
+	free(neigh_edges);
+	free(common);
+	free(common_list);
 }
 
 
@@ -429,6 +445,8 @@ void count5(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
 	unordered_map<TRIPLE, int, hash_TRIPLE>::iterator common3_it;
 	int frac,frac_prev;
+	int m = edges.size();
+
 
 	// precompute common nodes
 	frac_prev=-1;
@@ -813,6 +831,15 @@ void count5(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,
 		orbit[x][16] = (f_16-1*orbit[x][59]-2*orbit[x][52]-1*orbit[x][51]-2*orbit[x][46]-2*orbit[x][36]-2*orbit[x][34]-1*orbit[x][29]);
 		orbit[x][15] = (f_15-1*orbit[x][59]-2*orbit[x][52]-1*orbit[x][51]-2*orbit[x][45]-2*orbit[x][35]-2*orbit[x][34]-2*orbit[x][27]);
 	}
+
+	free(tri);
+	free(C5);
+	free(neigh);
+	free(neigh2);
+	free(common_x);
+	free(common_x_list);
+	free(common_a);
+	free(common_a_list);
 }
 
 
@@ -823,6 +850,7 @@ void ecount5(const std::vector<PAIR>& edges, int64 **orbit, int64 **eorbit, bool
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
 	unordered_map<TRIPLE, int, hash_TRIPLE>::iterator common3_it;
 	int frac,frac_prev;
+	int m = edges.size();
 
 	// precompute common nodes
 	frac_prev=-1;
@@ -1295,6 +1323,17 @@ void ecount5(const std::vector<PAIR>& edges, int64 **orbit, int64 **eorbit, bool
 		}
 	}
 
+	free(tri);
+	free(C5);
+	free(neighx);
+	free(neigh);
+	free(neigh_edges);
+	free(neigh2);
+	free(neigh2_edges);
+	free(common_x);
+	free(common_x_list);
+	free(common_y);
+	free(common_y_list);
 }
 
 
@@ -1313,7 +1352,7 @@ std::vector<std::vector<int>> generate_node_orbit_matrix(int g, int64 **orbit) {
 	return result;
 }
 
-std::vector<std::vector<int>> generate_edge_orbit_matrix(int g, int64 **eorbit) {
+std::vector<std::vector<int>> generate_edge_orbit_matrix(int m, int g, int64 **eorbit) {
 	int no[] = {0,0,0,2,12,68};
 	std::vector<std::vector<int>> result;
 
@@ -1329,7 +1368,7 @@ std::vector<std::vector<int>> generate_edge_orbit_matrix(int g, int64 **eorbit) 
 
 std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
 	n = num_nodes;
-	m = edge_index.size();
+	int m = edge_index.size();
 	int d_max=0;
 	std::vector<PAIR> edges;
 	deg = (int*)calloc(n,sizeof(int)); 
@@ -1367,6 +1406,7 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 			return _adjacent_matrix(x, y, n, adj_matrix);
 		};
 	} else {
+		adj_matrix = nullptr;
 		adjacent = [adj, deg](int x, int y) {
 			return _adjacent_list(x, y, adj, deg);
 		};
@@ -1407,9 +1447,11 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	} else {
 		if (graphlet_size==4) ecount4(edges, eorbit, adjacent);
 		if (graphlet_size==5) ecount5(edges, orbit, eorbit, adjacent, getEdgeId);
-		return generate_edge_orbit_matrix(graphlet_size, eorbit);
+		return generate_edge_orbit_matrix(m, graphlet_size, eorbit);
 	}
 
+	if(adj_matrix != nullptr)
+		free(adj_matrix);
 	free(deg);
 	for (int i=0;i<n;i++) free(orbit[i]);
 	free(orbit);

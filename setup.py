@@ -119,10 +119,12 @@ class CMakeBuild(build_ext):
             out = subprocess.check_output(
                 ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp,
             )
+            out = out.decode("utf-8")
             print(out)
             out = subprocess.check_output(
                 ["cmake", "--build", ".", *build_args], cwd=build_temp,
             )
+            out = out.decode("utf-8")
             print(out)
         except subprocess.CalledProcessError as e:
             output = e.output.decode("utf-8")
