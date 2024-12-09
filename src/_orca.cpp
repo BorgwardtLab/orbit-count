@@ -114,12 +114,9 @@ bool adjacent_matrix(int x, int y) { return adj_matrix[(x*n+y)/adj_chunk]&(1<<((
 bool (*adjacent)(int,int);
 int getEdgeId(int x, int y) { return inc[x][lower_bound(adj[x],adj[x]+deg[x],y)-adj[x]].second; }
 
-int64 **orbit; // orbit[x][o] - how many times does node x participate in orbit o
-int64 **eorbit; // eorbit[x][o] - how many times does node x participate in edge orbit o
-
 
 /** count graphlets on max 4 nodes */
-void count4(std::vector<PAIR> edges) {
+void count4(std::vector<PAIR> edges, int64 **orbit) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -250,7 +247,7 @@ void count4(std::vector<PAIR> edges) {
 
 
 /** count edge orbits of graphlets on max 4 nodes */
-void ecount4(std::vector<PAIR> edges) {
+void ecount4(std::vector<PAIR> edges, int64 **eorbit) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -418,7 +415,7 @@ void ecount4(std::vector<PAIR> edges) {
 
 
 /** count graphlets on max 5 nodes */
-void count5(std::vector<PAIR> edges) {
+void count5(std::vector<PAIR> edges, int64 **orbit) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -812,7 +809,7 @@ void count5(std::vector<PAIR> edges) {
 
 
 /** count edge orbits of graphlets on max 5 nodes */
-void ecount5(std::vector<PAIR> edges) {
+void ecount5(std::vector<PAIR> edges, int64 **orbit, int64 **eorbit) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -1296,7 +1293,7 @@ void ecount5(std::vector<PAIR> edges) {
 string orbit_type;
 
 
-std::vector<std::vector<int>> generate_node_orbit_matrix(int g) {
+std::vector<std::vector<int>> generate_node_orbit_matrix(int g, int64 **orbit) {
 	int no[] = {0,0,1,4,15,73};
 	std::vector<std::vector<int>> result;
 
@@ -1310,7 +1307,7 @@ std::vector<std::vector<int>> generate_node_orbit_matrix(int g) {
 	return result;
 }
 
-std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
+std::vector<std::vector<int>> generate_edge_orbit_matrix(int g, int64 **eorbit) {
 	int no[] = {0,0,0,2,12,68};
 	std::vector<std::vector<int>> result;
 
@@ -1380,20 +1377,20 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 		sort(inc[i],inc[i]+deg[i]);
 	}
 	// initialize orbit counts
-	orbit = (int64**)malloc(n*sizeof(int64*));
+	int64 **orbit = (int64**)malloc(n*sizeof(int64*));
 	for (int i=0;i<n;i++) orbit[i] = (int64*)calloc(73,sizeof(int64));
 	// initialize edge orbit counts
-	eorbit = (int64**)malloc(m*sizeof(int64*));
+	int64 **eorbit = (int64**)malloc(m*sizeof(int64*));
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
 	if (orbit_type =="node") {
-		if (graphlet_size==4) count4(edges);
-		if (graphlet_size==5) count5(edges);
-		return generate_node_orbit_matrix(graphlet_size);
+		if (graphlet_size==4) count4(edges, orbit);
+		if (graphlet_size==5) count5(edges, orbit);
+		return generate_node_orbit_matrix(graphlet_size, orbit);
 	} else {
-		if (graphlet_size==4) ecount4(edges);
-		if (graphlet_size==5) ecount5(edges);
-		return generate_edge_orbit_matrix(graphlet_size);
+		if (graphlet_size==4) ecount4(edges, eorbit);
+		if (graphlet_size==5) ecount5(edges, orbit, eorbit);
+		return generate_edge_orbit_matrix(graphlet_size, eorbit);
 	}
 
 	free(deg);
