@@ -98,6 +98,15 @@ struct hash_TRIPLE {
 	}
 };
 
+const int adj_chunk = 8*sizeof(int);
+
+bool _adjacent_matrix(int x, int y, int n, int *adj_matrix){
+	return adj_matrix[(x*n+y)/adj_chunk]&(1<<((x*n+y)%adj_chunk));
+}
+
+bool _adjacent_list(int x, int y, int **adj, int *deg){
+	return binary_search(adj[x],adj[x]+deg[x],y);
+}
 
 #define common3_get(x) (((common3_it=common3.find(x))!=common3.end())?(common3_it->second):0)
 #define common2_get(x) (((common2_it=common2.find(x))!=common2.end())?(common2_it->second):0)
@@ -107,16 +116,15 @@ int *deg; // degrees of individual nodes
 
 int **adj; // adj[x] - adjacency list of node x
 PII **inc; // inc[x] - incidence list of node x: (y, edge id)
-bool adjacent_list(int x, int y) { return binary_search(adj[x],adj[x]+deg[x],y); }
+//bool adjacent_list(int x, int y) { return binary_search(adj[x],adj[x]+deg[x],y); }
 int *adj_matrix; // compressed adjacency matrix
-const int adj_chunk = 8*sizeof(int);
-bool adjacent_matrix(int x, int y) { return adj_matrix[(x*n+y)/adj_chunk]&(1<<((x*n+y)%adj_chunk)); }
-bool (*adjacent)(int,int);
+//bool adjacent_matrix(int x, int y) { return adj_matrix[(x*n+y)/adj_chunk]&(1<<((x*n+y)%adj_chunk)); }
+//bool (*adjacent)(int,int);
 int getEdgeId(int x, int y) { return inc[x][lower_bound(adj[x],adj[x]+deg[x],y)-adj[x]].second; }
 
 
 /** count graphlets on max 4 nodes */
-void count4(const std::vector<PAIR>& edges, int64 **orbit) {
+void count4(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,int)) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -247,7 +255,7 @@ void count4(const std::vector<PAIR>& edges, int64 **orbit) {
 
 
 /** count edge orbits of graphlets on max 4 nodes */
-void ecount4(const std::vector<PAIR>& edges, int64 **eorbit) {
+void ecount4(const std::vector<PAIR>& edges, int64 **eorbit, bool (*adjacent)(int,int)) {
 	int frac,frac_prev;
 
 	// precompute triangles that span over edges
@@ -415,7 +423,7 @@ void ecount4(const std::vector<PAIR>& edges, int64 **eorbit) {
 
 
 /** count graphlets on max 5 nodes */
-void count5(const std::vector<PAIR>& edges, int64 **orbit) {
+void count5(const std::vector<PAIR>& edges, int64 **orbit, bool (*adjacent)(int,int)) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -809,7 +817,7 @@ void count5(const std::vector<PAIR>& edges, int64 **orbit) {
 
 
 /** count edge orbits of graphlets on max 5 nodes */
-void ecount5(const std::vector<PAIR>& edges, int64 **orbit, int64 **eorbit) {
+void ecount5(const std::vector<PAIR>& edges, int64 **orbit, int64 **eorbit, bool (*adjacent)(int,int)) {
 	unordered_map<PAIR, int, hash_PAIR> common2;
 	unordered_map<TRIPLE, int, hash_TRIPLE> common3;
 	unordered_map<PAIR, int, hash_PAIR>::iterator common2_it;
@@ -1347,16 +1355,21 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 		throw std::invalid_argument("Input file contains duplicate undirected edges.");
 	}
 	// set up adjacency matrix if it's smaller than 100MB
+	bool (*adjacent)(int,int);
 	if ((int64)n*n < 100LL*1024*1024*8) {
-		adjacent = adjacent_matrix;
 		adj_matrix = (int*)calloc((n*n)/adj_chunk+1,sizeof(int));
 		for (int i=0;i<m;i++) {
 			int a=edges[i].a, b=edges[i].b;
 			adj_matrix[(a*n+b)/adj_chunk]|=(1<<((a*n+b)%adj_chunk));
 			adj_matrix[(b*n+a)/adj_chunk]|=(1<<((b*n+a)%adj_chunk));
 		}
+		adjacent = [n, adj_matrix](int x, int y) {
+			return _adjacent_matrix(x, y, n, adj_matrix);
+		};
 	} else {
-		adjacent = adjacent_list;
+		adjacent = [adj, deg](int x, int y) {
+			return _adjacent_list(x, y, adj, deg);
+		};
 	}
 	// set up adjacency, incidence lists
 	adj = (int**)malloc(n*sizeof(int*));
@@ -1382,12 +1395,12 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
 	if (orbit_type =="node") {
-		if (graphlet_size==4) count4(edges, orbit);
-		if (graphlet_size==5) count5(edges, orbit);
+		if (graphlet_size==4) count4(edges, orbit, adjacent);
+		if (graphlet_size==5) count5(edges, orbit, adjacent);
 		return generate_node_orbit_matrix(graphlet_size, orbit);
 	} else {
-		if (graphlet_size==4) ecount4(edges, eorbit);
-		if (graphlet_size==5) ecount5(edges, orbit, eorbit);
+		if (graphlet_size==4) ecount4(edges, eorbit, adjacent);
+		if (graphlet_size==5) ecount5(edges, orbit, eorbit, adjacent);
 		return generate_edge_orbit_matrix(graphlet_size, eorbit);
 	}
 
