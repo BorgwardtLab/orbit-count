@@ -1450,8 +1450,10 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 		return generate_edge_orbit_matrix(m, graphlet_size, eorbit);
 	}
 
-	if(adj_matrix != nullptr)
+	if(adj_matrix != nullptr){
 		free(adj_matrix);
+		adj_matrix = nullptr;
+	}
 	free(deg);
 	for (int i=0;i<n;i++) free(orbit[i]);
 	free(orbit);
