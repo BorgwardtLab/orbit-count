@@ -1362,7 +1362,7 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 	}
 
 
-    for (int i=0;i<n;i++) d_max=max(d_max,deg[i]);
+	for (int i=0;i<n;i++) d_max=max(d_max,deg[i]);
 
 	if ((int)(set<PAIR>(edges,edges+m).size())!=m) {
 		throw std::invalid_argument("Input file contains duplicate undirected edges.");
