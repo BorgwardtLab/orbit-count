@@ -1414,34 +1414,9 @@ std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_
 }
 
 
-/*
-int main(int argc, char *argv[]) {
-	std::vector<std::pair<int, int>> edge_index = {
-            {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}
-        };
-        
-    std::vector<std::vector<int>> result = motif_counts(
-        "node",   // orbit type
-        4,        // graphlet size 
-        6,        // number of nodes
-        edge_index
-    );
-
-	return 0;
-}
-*/
 
 namespace py = pybind11;
 
-// Declare the C++ function signature
-/*
-std::vector<std::vector<int>> motif_counts(
-    const char* orbit_type, 
-    int graphlet_size, 
-    int num_nodes, 
-    const std::vector<std::pair<int, int>>& edge_index
-);
-*/
 
 py::array_t<int> python_motif_counts(
     const std::string& orbit_type, 
