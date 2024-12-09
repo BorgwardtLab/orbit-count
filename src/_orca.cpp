@@ -1323,7 +1323,7 @@ std::vector<std::vector<int>> generate_edge_orbit_matrix(int g) {
 
 std::vector<std::vector<int>> motif_counts(const char* orbit_type, int graphlet_size, int num_nodes, const std::vector<std::pair<int, int>>& edge_index) {
 	common2.clear();
-    common3.clear();
+	common3.clear();
 	n = num_nodes;
 	m = edge_index.size();
 	int d_max=0;
