@@ -1290,8 +1290,6 @@ void ecount5(std::vector<PAIR> edges, int64 **orbit, int64 **eorbit) {
 }
 
 
-string orbit_type;
-
 
 std::vector<std::vector<int>> generate_node_orbit_matrix(int g, int64 **orbit) {
 	int no[] = {0,0,1,4,15,73};
