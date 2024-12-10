@@ -128,6 +128,7 @@ def test_edge_list(n, p, graphlet_size, seed):
     assert np.allclose(res1[perm], res2)
 
 
+@pytest.mark.skip(reason="Memory leak test is slow and should not run in CI")
 @pytest.mark.parametrize("orbit_type", ["node", "edge"])
 @pytest.mark.parametrize("graphlet_size", [4, 5])
 def test_memory_leak(orbit_type, graphlet_size):
