@@ -117,12 +117,14 @@ class CMakeBuild(build_ext):
 
         try:
             out = subprocess.check_output(
-                ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp,
+                ["cmake", ext.sourcedir, *cmake_args],
+                cwd=build_temp,
             )
             out = out.decode("utf-8")
             print(out)
             out = subprocess.check_output(
-                ["cmake", "--build", ".", *build_args], cwd=build_temp,
+                ["cmake", "--build", ".", *build_args],
+                cwd=build_temp,
             )
             out = out.decode("utf-8")
             print(out)
@@ -130,7 +132,6 @@ class CMakeBuild(build_ext):
             output = e.output.decode("utf-8")
             print(output)
             raise e
-        
 
 
 # The information here can also be placed in setup.cfg - better separation of
