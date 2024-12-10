@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 dependencies = [
   'numpy',
   'networkx',
-  'ninja'
+  'ninja',
 ]
 name = "orbit-count"
 requires-python = ">=3.7"
@@ -21,10 +21,19 @@ version = "0.1.0"
 dev = [
     'pytest',
     'pytest-xdist',
-    'memory_profiler'
+    'memory_profiler',
+    'ruff',
+    'pre-commit',
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-n auto"
+
+[tool.lint.ruff]
+line-length = 80
+target-version = "py37"
+
+[tool.lint.ruff.pydocstyle]
+convention = "google"
