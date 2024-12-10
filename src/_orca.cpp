@@ -104,7 +104,6 @@ struct hash_TRIPLE {
 
 int n; // n = number of nodes, m = number of edges
 int *deg; // degrees of individual nodes
-PAIR *edges; // list of edges
 
 int **adj; // adj[x] - adjacency list of node x
 PII **inc; // inc[x] - incidence list of node x: (y, edge id)
@@ -1371,11 +1370,12 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 		a = edge_index[i].first;
 		b = edge_index[i].second;
 		if (!(0<=a && a<n) || !(0<=b && b<n)) {
+			free(deg);
 			throw std::invalid_argument("Node ids should be between 0 and n-1.");
 		}
 		if (a==b) {
+			free(deg);
 			throw std::invalid_argument("Self loops (edge from x to x) are not allowed.");
-			throw;
 		}
 		deg[a]++; deg[b]++;
 		edges.push_back(PAIR(a,b));
@@ -1384,6 +1384,7 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	for (int i=0;i<n;i++) d_max=max(d_max,deg[i]);
 
 	if ((int)(set<PAIR>(edges.begin(),edges.end()).size())!=m) {
+		free(deg);
 		throw std::invalid_argument("Input file contains duplicate undirected edges.");
 	}
 	// set up adjacency matrix if it's smaller than 100MB
@@ -1425,14 +1426,15 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	for (int i=0;i<m;i++) eorbit[i] = (int64*)calloc(68,sizeof(int64));
 	
 
+	std::vector<std::vector<int>> result;
 	if (orbit_type =="node") {
 		if (graphlet_size==4) count4(edges, orbit);
 		if (graphlet_size==5) count5(edges, orbit);
-		return generate_node_orbit_matrix(graphlet_size, orbit);
+		result = generate_node_orbit_matrix(graphlet_size, orbit);
 	} else {
 		if (graphlet_size==4) ecount4(edges, eorbit);
 		if (graphlet_size==5) ecount5(edges, orbit, eorbit);
-		return generate_edge_orbit_matrix(m, graphlet_size, eorbit);
+		result = generate_edge_orbit_matrix(m, graphlet_size, eorbit);
 	}
 
 	if(adj_matrix != nullptr){
@@ -1449,6 +1451,7 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	free(inc);
 	for (int i=0;i<n;i++) free(adj[i]);
 	free(adj);
+	return result;
 }
 
 namespace py = pybind11;
