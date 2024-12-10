@@ -2,8 +2,10 @@ name: CI/CD
 
 on:
   workflow_dispatch:  # Allows manual triggering
+  pull_request:  # Runs on pull requests
+    branches: [ master ]  # When targeting main branch
   release:
-    types: [published]  # Runs when a release is published
+    types: [ published ]  # Runs when a release is published
 
 jobs:
   test:
