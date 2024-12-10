@@ -20,5 +20,11 @@ version = "0.1.0"
 [project.optional-dependencies]
 dev = [
     'pytest',
+    'pytest-xdist',
     'memory_profiler'
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-n auto"
