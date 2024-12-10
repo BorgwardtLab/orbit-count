@@ -29,6 +29,9 @@
  *		- generate_node_orbit_matrix
  *		- generate_edge_orbit_matrix
  *	- Added pybind11 module
+ *  - Use std::vector for edges
+ *	- Free memory that was allocated dynamically
+ *	- Make common2 and common3 local s.t. (e)count5 can be called repeatedly
 */
 
 #include <pybind11/pybind11.h>
