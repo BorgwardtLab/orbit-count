@@ -1,5 +1,5 @@
 # Python Bindings for ORCA
-This package implements python bindings for the (ORbit Counting Algorithm)[https://github.com/thocevar/orca].
+This package implements python bindings for the [ORbit Counting Algorithm](https://github.com/thocevar/orca).
 
 The original source code was modified slightly to avoid memory leaks upon repeated function calls. 
 
