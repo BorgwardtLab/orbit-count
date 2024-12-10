@@ -16,3 +16,9 @@ dependencies = [
 name = "orbit-count"
 requires-python = ">=3.7"
 version = "0.1.0"
+
+[project.optional-dependencies]
+dev = [
+    'pytest',
+    'memory_profiler'
+]
