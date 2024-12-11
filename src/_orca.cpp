@@ -1507,21 +1507,48 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 	throw std::runtime_error("Invalid arguments");
 }
 
+std::vector<std::vector<std::vector<int>>> batched_motif_counts(
+    const std::string& orbit_type, 
+    int graphlet_size, 
+    const std::vector<int>& num_nodes,
+    const std::vector<std::vector<std::pair<int, int>>>& batch_edge_indices
+) {
+    std::vector<std::vector<std::vector<int>>> results;
+    
+    #pragma omp parallel
+    {
+        #pragma omp for schedule(dynamic)
+        for (size_t i = 0; i < batch_edge_indices.size(); ++i) {
+            auto result = motif_counts(orbit_type, graphlet_size, num_nodes[i], batch_edge_indices[i]);
+            
+            #pragma omp critical
+            {
+                results.push_back(result);
+            }
+        }
+    }
+    
+    return results;
+}
+
 /*
 int main(int argc, char *argv[]) {
 	std::vector<std::pair<int, int>> edge_index = {
             {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}
         };
-	std::string orbit_type("node");
-    std::vector<std::vector<int>> result = motif_counts(
-        orbit_type,   // orbit type
+	std::vector<std::vector<std::pair<int, int>>> batched_edge_index;
+	batched_edge_index.push_back(edge_index);
+	std::vector<int> num_nodes = {6};
+
+	auto result = batched_motif_counts(
+        "node",   // orbit type
         4,        // graphlet size 
-        6,        // number of nodes
-        edge_index
+        num_nodes,        // number of nodes
+        batched_edge_index
     );
 	return 0;
-}
 */
+
 
 namespace py = pybind11;
 
@@ -1572,6 +1599,69 @@ py::array_t<int> python_motif_counts(
 }
 
 
+py::array_t<int> python_batched_motif_counts(
+	const std::string& orbit_type, 
+	int graphlet_size, 
+	py::array_t<int> num_nodes_array,
+	py::list edge_index_arrays
+) {
+	// Validate input NumPy array
+	auto node_count_buf = num_nodes_array.request();
+
+	if (node_count_buf.ndim != 1 || node_count_buf.shape[0] != edge_index_arrays.size()){
+		throw std::runtime_error("Node count array must be one-dimensional and have same length as edge_index_arrays");
+	}
+
+	int num_graphs = node_count_buf.shape[0];
+
+	// Convert NumPy array to vector of pairs
+	std::vector<std::vector<std::pair<int, int>>> edge_index(num_graphs, std::vector<std::pair<int, int>>());
+	std::vector<int> num_nodes;
+
+	int* node_count_ptr = static_cast<int*>(node_count_buf.ptr);
+
+	for (ssize_t graph_idx = 0; graph_idx < num_graphs; ++graph_idx) {
+		py::array_t<int> edge_idx_array = edge_index_arrays[graph_idx].cast<py::array_t<int>>();
+		auto buf = edge_idx_array.request();
+		int* ptr = static_cast<int*>(buf.ptr);
+		
+		num_nodes.push_back(node_count_ptr[graph_idx]);
+
+		for (ssize_t i = 0; i < buf.shape[0]; ++i) {
+			edge_index[graph_idx].emplace_back(
+				ptr[i * 2],      // first column
+				ptr[i * 2 + 1]   // second column
+			);
+		}
+	}
+
+	// Call C++ function
+	auto result = batched_motif_counts(
+		orbit_type, 
+		graphlet_size, 
+		num_nodes, 
+		edge_index
+	);
+
+	// Convert results to NumPy array
+	py::array_t<int> python_results({result.size(), result[0].size(), result[0][0].size()});
+	auto results_buf = python_results.request();
+	int* results_ptr = static_cast<int*>(results_buf.ptr);
+
+	for (size_t i = 0; i < result.size(); ++i) {
+		for (size_t j = 0; j < result[i].size(); ++j) {
+			for (size_t k = 0; k < result[i][j].size(); ++k) {
+				results_ptr[i * (result[i].size() * result[i][j].size()) + 
+							j * result[i][j].size() + 
+							k] = result[i][j][k];
+			}
+		}
+	}
+
+	return python_results;
+}
+
+
 PYBIND11_MODULE(_orca, m) {
 	m.def("motif_counts", &python_motif_counts, 
 			"Compute motif counts for a graph",
@@ -1579,4 +1669,11 @@ PYBIND11_MODULE(_orca, m) {
 			py::arg("graphlet_size"),
 			py::arg("num_nodes"),
 			py::arg("edge_index"));
+	
+	m.def("batched_motif_counts", &python_batched_motif_counts, 
+			"Compute motif counts for a graph",
+			py::arg("orbit_type"),
+			py::arg("graphlet_size"),
+			py::arg("num_nodes"),
+			py::arg("edge_indices"));
 }

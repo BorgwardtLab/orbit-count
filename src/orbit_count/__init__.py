@@ -16,11 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from typing import Optional, List
+from typing import Optional, List, Collection
 import networkx as nx
 import numpy as np
 
-from _orca import motif_counts
+import _orca
 
 
 def _edge_list_reindexed(
@@ -37,7 +37,7 @@ def _edge_list_reindexed(
 def node_orbit_counts(
     graph: nx.Graph, graphlet_size: int = 4, node_list: Optional[List] = None
 ) -> np.ndarray:
-    return motif_counts(
+    return _orca.motif_counts(
         "node",
         graphlet_size,
         graph.number_of_nodes(),
@@ -45,10 +45,34 @@ def node_orbit_counts(
     )
 
 
+def batched_node_orbit_counts(
+    graphs: Collection[nx.Graph],
+    graphlet_size: int = 4,
+    node_lists: Optional[Collection[List]] = None,
+) -> List[np.ndarray]:
+    if node_lists is not None and len(node_lists) != len(graphs):
+        raise ValueError(
+            "`node_lists` must either be None or have the same length as `graphs`"
+        )
+    else:
+        node_lists = [None for _ in range(len(graphs))]
+
+    num_nodes = np.array([g.number_of_nodes() for g in graphs], dtype=int)
+    all_edge_indices = [
+        _edge_list_reindexed(g, node_list=node_list)
+        for g, node_list in zip(graphs, node_lists)
+    ]
+
+    all_counts = _orca.batched_motif_counts(
+        "node", graphlet_size, num_nodes, all_edge_indices
+    )
+    return all_counts
+
+
 def edge_orbit_counts(
     graph: nx.Graph, graphlet_size: int = 4, edge_list: Optional[List] = None
 ) -> np.ndarray:
-    return motif_counts(
+    return _orca.motif_counts(
         "edge",
         graphlet_size,
         graph.number_of_nodes(),
