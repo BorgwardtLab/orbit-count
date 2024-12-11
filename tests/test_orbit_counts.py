@@ -72,6 +72,7 @@ def test_erdos_renyi(orca_executable, orbit_type, n, p, graphlet_size, seed):
         counts = orbit_count.edge_orbit_counts(
             graph, graphlet_size=graphlet_size, edge_list=edge_list
         )
+    assert isinstance(counts, np.ndarray)
     baseline_counts = _baseline_implementation(
         orca_executable=orca_executable,
         graph=graph,
@@ -82,6 +83,43 @@ def test_erdos_renyi(orca_executable, orbit_type, n, p, graphlet_size, seed):
     )
     assert baseline_counts.shape == counts.shape
     assert np.allclose(baseline_counts, counts)
+
+
+@pytest.mark.parametrize("orbit_type", ["node", "edge"])
+@pytest.mark.parametrize("graphlet_size", [4, 5])
+@pytest.mark.parametrize("seed", [0, 1])
+@pytest.mark.parametrize("n,p", [(64, 0.1), (32, 0.2)])
+@pytest.mark.parametrize("num_graphs", [1, 32])
+def test_batched(orca_executable, orbit_type, n, p, graphlet_size, seed, num_graphs):
+    graphs = [
+        nx.erdos_renyi_graph(n, p, seed=seed + 100 * i) for i in range(num_graphs)
+    ]
+    if orbit_type == "node":
+        counts = orbit_count.batched_node_orbit_counts(
+            graphs,
+            graphlet_size=graphlet_size,
+        )
+    elif orbit_type == "edge":
+        counts = orbit_count.batched_edge_orbit_counts(
+            graphs,
+            graphlet_size=graphlet_size,
+        )
+    assert isinstance(counts, list) and all(
+        isinstance(item, np.ndarray) for item in counts
+    )
+    baseline_counts = [
+        _baseline_implementation(
+            orca_executable=orca_executable,
+            graph=graph,
+            orbit_type=orbit_type,
+            graphlet_size=graphlet_size,
+        )
+        for graph in graphs
+    ]
+    assert len(baseline_counts) == len(counts) and len(counts) == num_graphs
+    assert all(
+        np.allclose(count1, count2) for count1, count2 in zip(counts, baseline_counts)
+    )
 
 
 @pytest.mark.parametrize("graphlet_size", [4, 5])

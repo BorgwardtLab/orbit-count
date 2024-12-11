@@ -1508,26 +1508,19 @@ std::vector<std::vector<int>> motif_counts(std::string orbit_type, int graphlet_
 }
 
 std::vector<std::vector<std::vector<int>>> batched_motif_counts(
-    const std::string& orbit_type, 
-    int graphlet_size, 
+    const std::string& orbit_type,
+    int graphlet_size,
     const std::vector<int>& num_nodes,
     const std::vector<std::vector<std::pair<int, int>>>& batch_edge_indices
 ) {
-    std::vector<std::vector<std::vector<int>>> results;
-    
-    #pragma omp parallel
-    {
-        #pragma omp for schedule(dynamic)
-        for (size_t i = 0; i < batch_edge_indices.size(); ++i) {
-            auto result = motif_counts(orbit_type, graphlet_size, num_nodes[i], batch_edge_indices[i]);
-            
-            #pragma omp critical
-            {
-                results.push_back(result);
-            }
-        }
+    int num_graphs = batch_edge_indices.size();
+    std::vector<std::vector<std::vector<int>>> results(num_graphs);
+
+    #pragma omp parallel for schedule(dynamic)
+    for (size_t i = 0; i < num_graphs; ++i) {
+        results[i] = motif_counts(orbit_type, graphlet_size, num_nodes[i], batch_edge_indices[i]);
     }
-    
+
     return results;
 }
 
@@ -1599,7 +1592,7 @@ py::array_t<int> python_motif_counts(
 }
 
 
-py::array_t<int> python_batched_motif_counts(
+py::list python_batched_motif_counts(
 	const std::string& orbit_type, 
 	int graphlet_size, 
 	py::array_t<int> num_nodes_array,
@@ -1644,16 +1637,16 @@ py::array_t<int> python_batched_motif_counts(
 	);
 
 	// Convert results to NumPy array
-	py::array_t<int> python_results({result.size(), result[0].size(), result[0][0].size()});
-	auto results_buf = python_results.request();
-	int* results_ptr = static_cast<int*>(results_buf.ptr);
-
+	py::list python_results;
+	
 	for (size_t i = 0; i < result.size(); ++i) {
+		py::array_t<int> count_item({result[i].size(), result[i][0].size()});
+		python_results.append(count_item);
+		auto item_buf = count_item.request();
+		int* item_ptr = static_cast<int*>(item_buf.ptr);
 		for (size_t j = 0; j < result[i].size(); ++j) {
 			for (size_t k = 0; k < result[i][j].size(); ++k) {
-				results_ptr[i * (result[i].size() * result[i][j].size()) + 
-							j * result[i][j].size() + 
-							k] = result[i][j][k];
+				item_ptr[j * result[i][j].size() + k] = result[i][j][k];
 			}
 		}
 	}

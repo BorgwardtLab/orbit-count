@@ -78,3 +78,27 @@ def edge_orbit_counts(
         graph.number_of_nodes(),
         _edge_list_reindexed(graph, edge_list=edge_list),
     )
+
+
+def batched_edge_orbit_counts(
+    graphs: Collection[nx.Graph],
+    graphlet_size: int = 4,
+    edge_lists: Optional[Collection[List]] = None,
+) -> List[np.ndarray]:
+    if edge_lists is not None and len(edge_lists) != len(graphs):
+        raise ValueError(
+            "`edge_lists` must either be None or have the same length as `graphs`"
+        )
+    else:
+        edge_lists = [None for _ in range(len(graphs))]
+
+    num_nodes = np.array([g.number_of_nodes() for g in graphs], dtype=int)
+    all_edge_indices = [
+        _edge_list_reindexed(g, edge_list=edge_list)
+        for g, edge_list in zip(graphs, edge_lists)
+    ]
+
+    all_counts = _orca.batched_motif_counts(
+        "edge", graphlet_size, num_nodes, all_edge_indices
+    )
+    return all_counts
