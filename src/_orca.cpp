@@ -23,15 +23,17 @@
  * Changes:
  * 	- Removed main function, init function
  * 	- Removed data input/output via files
+ *  - Moved counting functions into GraphData class
  * 	- Added functions:
  * 		- motif_counts
  *		- python_motif_counts
- *		- generate_node_orbit_matrix
- *		- generate_edge_orbit_matrix
+ * 		- batched_motif_couunts
+ * 		- python_batched_motif_counts
+ *	- Use OpenMP to count orbits for graphs in parallel
  *	- Added pybind11 module
- *  - Use std::vector for edges
  *	- Free memory that was allocated dynamically
  *	- Make common2 and common3 local s.t. (e)count5 can be called repeatedly
+ *	- Various other small changes, e.g. using std::vector instead of pointers
 */
 
 #include <pybind11/pybind11.h>
@@ -1523,24 +1525,6 @@ std::vector<std::vector<std::vector<int>>> batched_motif_counts(
 
     return results;
 }
-
-/*
-int main(int argc, char *argv[]) {
-	std::vector<std::pair<int, int>> edge_index = {
-            {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}
-        };
-	std::vector<std::vector<std::pair<int, int>>> batched_edge_index;
-	batched_edge_index.push_back(edge_index);
-	std::vector<int> num_nodes = {6};
-
-	auto result = batched_motif_counts(
-        "node",   // orbit type
-        4,        // graphlet size 
-        num_nodes,        // number of nodes
-        batched_edge_index
-    );
-	return 0;
-*/
 
 
 namespace py = pybind11;

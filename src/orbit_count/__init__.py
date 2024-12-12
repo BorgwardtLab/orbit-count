@@ -23,6 +23,13 @@ import numpy as np
 from ._orca import batched_motif_counts as _batched_motif_counts
 from ._orca import motif_counts as _motif_counts
 
+__all__ = [
+    "node_orbit_counts",
+    "batched_node_orbit_counts",
+    "edge_orbit_counts",
+    "batched_edge_orbit_counts",
+]
+
 
 def _edge_list_reindexed(
     graph: nx.Graph, node_list: Optional[List] = None, edge_list: Optional[List] = None
