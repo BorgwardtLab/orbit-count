@@ -23,7 +23,7 @@
  * Changes:
  * 	- Removed main function, init function
  * 	- Removed data input/output via files
- *  - Moved counting functions into GraphData class
+ *	- Moved counting functions into GraphData class
  * 	- Added functions:
  * 		- motif_counts
  *		- python_motif_counts

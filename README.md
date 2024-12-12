@@ -1,7 +1,7 @@
 # Python Bindings for ORCA
 This package implements python bindings for the [ORbit Counting Algorithm](https://github.com/thocevar/orca).
 
-The original source code was modified slightly to avoid memory leaks upon repeated function calls. 
+The original source code was modified to avoid memory leaks upon repeated function calls and allow for parallel orbit counting when provided with several graphs (using OpenMP).
 
 
 ## Installation
@@ -27,4 +27,8 @@ edge_count = orbit_count.edge_orbit_counts(graph, graphlet_size=4)      # Return
 # To get a specific ordering of counts, pass node_list or edge_list
 node_count = orbit_count.node_orbit_counts(graph, graphlet_size=5, node_list=list(graph.nodes))
 edge_count = orbit_count.edge_orbit_counts(graph, graphlet_size=5, edge_list=list(graph.edges))
+
+# Count orbits in multiple graphs in parallel
+node_count = orbit_count.batched_node_orbit_counts([nx.erdos_renyi_graph(64, 0.2, seed=i) for i in range(32)], graphlet_size=4)
+edge_count = orbit_count.batched_edge_orbit_counts([nx.erdos_renyi_graph(64, 0.2, seed=i) for i in range(32)], graphlet_size=4)
 ```
