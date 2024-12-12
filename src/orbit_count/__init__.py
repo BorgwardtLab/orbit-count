@@ -20,7 +20,8 @@ from typing import Optional, List, Collection
 import networkx as nx
 import numpy as np
 
-import _orca
+from ._orca import batched_motif_counts as _batched_motif_counts
+from ._orca import motif_counts as _motif_counts
 
 
 def _edge_list_reindexed(
@@ -37,7 +38,7 @@ def _edge_list_reindexed(
 def node_orbit_counts(
     graph: nx.Graph, graphlet_size: int = 4, node_list: Optional[List] = None
 ) -> np.ndarray:
-    return _orca.motif_counts(
+    return _motif_counts(
         "node",
         graphlet_size,
         graph.number_of_nodes(),
@@ -63,7 +64,7 @@ def batched_node_orbit_counts(
         for g, node_list in zip(graphs, node_lists)
     ]
 
-    all_counts = _orca.batched_motif_counts(
+    all_counts = _batched_motif_counts(
         "node", graphlet_size, num_nodes, all_edge_indices
     )
     return all_counts
@@ -72,7 +73,7 @@ def batched_node_orbit_counts(
 def edge_orbit_counts(
     graph: nx.Graph, graphlet_size: int = 4, edge_list: Optional[List] = None
 ) -> np.ndarray:
-    return _orca.motif_counts(
+    return _motif_counts(
         "edge",
         graphlet_size,
         graph.number_of_nodes(),
@@ -98,7 +99,7 @@ def batched_edge_orbit_counts(
         for g, edge_list in zip(graphs, edge_lists)
     ]
 
-    all_counts = _orca.batched_motif_counts(
+    all_counts = _batched_motif_counts(
         "edge", graphlet_size, num_nodes, all_edge_indices
     )
     return all_counts
