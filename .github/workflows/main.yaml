@@ -39,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, macos-13]
 
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +64,8 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           MACOSX_DEPLOYMENT_TARGET: "14.0"
+          CIBW_ARCHS_MACOS: "x86_64 amd64"
+          CIBW_ARCHS_LINUX: "x86_64"
 
       - uses: actions/upload-artifact@v4
         with:
