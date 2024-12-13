@@ -16,6 +16,18 @@ find_package(pybind11 CONFIG REQUIRED)          # add_subdirectory(pybind11)
 
 
 # Find OpenMP package
+# Special handling for OpenMP on macOS
+if(APPLE)
+    # Use Homebrew's libomp if available
+    if(EXISTS "/opt/homebrew/opt/libomp")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+        set(OpenMP_omp_LIBRARY "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+        set(OpenMP_INCLUDE_DIRS "/opt/homebrew/opt/libomp/include")
+        include_directories("${OpenMP_INCLUDE_DIRS}")
+    endif()
+endif()
+
 find_package(OpenMP REQUIRED)
 
 # Add a library using FindPython's tooling (pybind11 also provides a helper like
