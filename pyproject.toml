@@ -38,4 +38,4 @@ minimum-version = "build-system.requires"
 test-requires = ["pytest", "memory_profiler"]
 test-command = "pytest {project}/tests"
 build = ["3.8", "3.9", "3.10", "3.11", "3.12"]
-archs = ["x86_64", "arm64"]
+archs = ["x86_64"]
