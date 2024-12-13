@@ -9,7 +9,7 @@ on:
 
 env:
   CIBW_TEST_REQUIRES: pytest
-  CIBW_TEST_COMMAND: "pytest orca-bindings/tests"
+  CIBW_TEST_COMMAND: "pytest tests/"
 
 jobs:
   test:
