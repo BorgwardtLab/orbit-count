@@ -54,6 +54,8 @@ jobs:
         run: |
           brew install libomp
           export OpenMP_ROOT=$(brew --prefix)/opt/libomp
+          export CFLAGS="-I${OpenMP_ROOT}/include -Xclang -fopenmp"
+          export LDFLAGS="-L${OpenMP_ROOT}/lib -lomp"
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.22.0
