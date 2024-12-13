@@ -64,7 +64,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           MACOSX_DEPLOYMENT_TARGET: "14.0"
-          CIBW_ARCHS_MACOS: "x86_64 amd64"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ARCHS_LINUX: "x86_64"
 
       - uses: actions/upload-artifact@v4
