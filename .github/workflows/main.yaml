@@ -7,10 +7,6 @@ on:
   release:
     types: [ published ]  # Runs when a release is published
 
-env:
-  CIBW_TEST_REQUIRES: pytest
-  CIBW_TEST_COMMAND: "pytest {project}/tests"
-
 jobs:
   test:
     runs-on: ubuntu-latest

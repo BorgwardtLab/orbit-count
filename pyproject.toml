@@ -33,3 +33,7 @@ license-files = { include = ["LICENSE.md", "LICENSE.wheel.md"] }
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
+
+[tool.cibuildwheel]
+test-requires = ["pytest", "memory_profiler"]
+test-command = "pytest {project}/tests"
