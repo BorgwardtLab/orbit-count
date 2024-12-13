@@ -52,7 +52,7 @@ jobs:
       - name: Install OpenMP (macOS only)
         if: runner.os == 'macOS'
         run: |
-          brew install libomp
+          HOMEBREW_MACOS_MIN_VERSION=11.0 brew install libomp
           export LDFLAGS="-L/opt/homebrew/opt/libomp/lib"
           export CPPFLAGS="-I/opt/homebrew/opt/libomp/include"
 
