@@ -32,3 +32,7 @@ edge_count = orbit_count.edge_orbit_counts(graph, graphlet_size=5, edge_list=lis
 node_count = orbit_count.batched_node_orbit_counts([nx.erdos_renyi_graph(64, 0.2, seed=i) for i in range(32)], graphlet_size=4)
 edge_count = orbit_count.batched_edge_orbit_counts([nx.erdos_renyi_graph(64, 0.2, seed=i) for i in range(32)], graphlet_size=4)
 ```
+
+## License
+The source (i.e., the code provided in this GitHub repository) is licensed under GPL v3, as detailed in LICENSE.md.
+The wheels may bundle an external implementation of OpenMP as a dynamically linked library. We refer to LICENSE.wheel.md for information on how these components are licensed.

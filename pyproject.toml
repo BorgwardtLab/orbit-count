@@ -16,6 +16,7 @@ readme = "README.md"
 authors = [
   { name = "Max Planck Institute of Biochemistry, MLSB" },
 ]
+license = {text = "The source of this package is licensed under GPL v3. The wheels may bundle an external implementation of OpenMP as a dynamically linked library. We refer to LICENSE.wheel.md for further information."}
 
 [project.optional-dependencies]
 dev = [
@@ -25,6 +26,9 @@ dev = [
     'ruff',
     'pre-commit',
 ]
+
+[tool.setuptools.package-data]
+license-files = { include = ["LICENSE.md", "LICENSE.wheel.md"] }
 
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
