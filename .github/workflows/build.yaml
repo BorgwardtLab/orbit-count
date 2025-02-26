@@ -1,0 +1,138 @@
+# Workflow to build and test wheels, adopted from https://github.com/scikit-learn/scikit-learn/blob/4ad187a7401f939c4d9cd27090c4258b5d810650/.github/workflows/wheels.yml
+name: Wheel builder
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+  release:
+    types: [ created, published ]  # Runs when a release is published
+
+
+jobs:
+  # Build the wheels for Linux and macOS for Python 3.9 and newer
+  build_wheels:
+    name: Build wheel for cp${{ matrix.python }}-${{ matrix.platform_id }}-${{ matrix.manylinux_image }}
+    runs-on: ${{ matrix.os }}
+
+    # For conda-incubator/setup-miniconda to work
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    strategy:
+      # Ensure that a wheel builder finishes even if another fails
+      fail-fast: false
+      matrix:
+        include:
+          # Linux 64 bit manylinux2014
+          - os: ubuntu-latest
+            python: 37
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 38
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 39
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          # NumPy on Python 3.10 only supports 64bit and is only available with manylinux2014
+          - os: ubuntu-latest
+            python: 310
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          - os: ubuntu-latest
+            python: 311
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 312
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 313
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+
+          # MacOS x86_64
+          - os: macos-13
+            python: 37
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 38
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 39
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 310
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 311
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 312
+            platform_id: macosx_x86_64
+          - os: macos-13
+            python: 313
+            platform_id: macosx_x86_64
+
+
+          # MacOS arm64
+          - os: macos-14
+            python: 38
+            platform_id: macosx_arm64
+          - os: macos-14
+            python: 39
+            platform_id: macosx_arm64
+          - os: macos-14
+            python: 310
+            platform_id: macosx_arm64
+          - os: macos-14
+            python: 311
+            platform_id: macosx_arm64
+          - os: macos-14
+            python: 312
+            platform_id: macosx_arm64
+          - os: macos-14
+            python: 313
+            platform_id: macosx_arm64
+
+    steps:
+      - name: Checkout orbit-count
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11" # update once build dependencies are available
+
+      - uses: conda-incubator/setup-miniconda@v3
+        if: ${{ startsWith(matrix.platform_id, 'macosx') }}
+
+      - name: Build and test wheels
+        env:
+          CIBW_PRERELEASE_PYTHONS: ${{ matrix.prerelease_pythons }}
+          CIBW_FREE_THREADED_SUPPORT: ${{ matrix.free_threaded_support }}
+          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+          CIBW_ARCHS: all
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.manylinux_image }}
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.manylinux_image }}
+          # Needed on Windows CI to compile with Visual Studio compiler
+          # otherwise Meson detects a MINGW64 platform and use MINGW64
+          # toolchain
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--vsenv"
+          CIBW_ENVIRONMENT_PASS_LINUX: RUNNER_OS
+
+          CIBW_BUILD_VERBOSITY: 1
+
+        run: bash ./build_wheels.sh
+
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ matrix.python }}-${{ matrix.platform_id }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
